@@ -1,20 +1,27 @@
 const card = require('../models/card');
 
 const getCard = (req, res) => {
-  card.find().then((data) => res.send(data));
+  card.find()
+    .then((data) => res.send(data))
+    .catch(err => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
 };
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user._id })
     .then((data) => res.send({ data }))
-    .catch(err => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: 'Отправлены некорректные данные' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    });
 };
 
 const deleteCard = (req, res) => {
   card.findByIdAndRemove(req.params.cardId)
     .then((data) => res.send({ data }))
-    .catch(err => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(err => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
 };
 
 module.exports = {
