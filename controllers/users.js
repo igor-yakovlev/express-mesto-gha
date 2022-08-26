@@ -14,9 +14,13 @@ const getUserById = async (req, res) => {
     const data = await user.findById(req.params.userId).orFail(() => res.status(404).send({ message: `Пользователь с таким _id ${req.params.userId} не найден` }));
     res.status(200).send({ data });
   } catch (e) {
-    if (e.name === 'ValidationError') res.status(400).send({ message: 'Отправлены некорректные данные' });
-    if (e.name === 'CastError') res.status(400).send({ message: `Пользователь по указанному ${req.params.userId} не найден` });
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    if (e.name === 'ValidationError') {
+      res.status(400).send({ message: 'Отправлены некорректные данные' });
+    } else if (e.name === 'CastError') {
+      res.status(400).send({ message: `Пользователь по указанному ${req.params.userId} не найден` });
+    } else {
+      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    }
   }
 };
 
@@ -26,8 +30,11 @@ const createUser = async (req, res) => {
     const data = await user.create({ name, about, avatar });
     res.status(201).send({ data });
   } catch (e) {
-    if (e.name === 'ValidationError') res.status(400).send({ message: 'Отправлены некорректные данные' });
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    if (e.name === 'ValidationError') {
+      res.status(400).send({ message: 'Отправлены некорректные данные' });
+    } else {
+      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    }
   }
 };
 
@@ -41,10 +48,15 @@ const updateUser = async (req, res) => {
     );
     res.status(200).send({ data });
   } catch (e) {
-    if (e.name === 'ValidationError') res.status(400).send({ message: 'Отправлены некорректные данные' });
-    if (e.name === 'ErrorCaptureStackTrace') res.status(400).send({ message: 'Отправлены некорректные данные' });
-    if (e.name === 'CastError') res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    if (e.name === 'ValidationError') {
+      res.status(400).send({ message: 'Отправлены некорректные данные' });
+    } else if (e.name === 'ErrorCaptureStackTrace') {
+      res.status(400).send({ message: 'Отправлены некорректные данные' });
+    } else if (e.name === 'CastError') {
+      res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
+    } else {
+      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    }
   }
 };
 
@@ -54,9 +66,13 @@ const updateUserAvatar = async (req, res) => {
     const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
     res.status(200).send(data);
   } catch (e) {
-    if (e.name === 'ValidationError') res.status(400).send({ message: 'Отправлены некорректные данные' });
-    if (e.name === 'CastError') res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    if (e.name === 'ValidationError') {
+      res.status(400).send({ message: 'Отправлены некорректные данные' });
+    } else if (e.name === 'CastError') {
+      res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
+    } else {
+      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    }
   }
 };
 
