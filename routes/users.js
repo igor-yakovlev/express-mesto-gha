@@ -1,6 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { getUser, createUser, getUserById, updateUser, updateUserAvatar } = require('../controllers/user');
+const {
+  getUser,
+  createUser,
+  getUserById,
+  updateUser,
+  updateUserAvatar,
+} = require('../controllers/user');
 
 const userRouter = express.Router();
 

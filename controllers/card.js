@@ -24,8 +24,23 @@ const deleteCard = (req, res) => {
     .catch(err => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
 };
 
+const likeCard = (req, res) => {
+  card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .then((data) => res.send({ data }))
+    .catch(err => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
+};
+
+const dislikeCard = (req, res) => {
+  console.log(req.user._id);
+  card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .then((data) => res.send({ data }))
+    .catch(err => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
+};
+
 module.exports = {
   getCard,
   createCard,
   deleteCard,
+  likeCard,
+  dislikeCard,
 };
