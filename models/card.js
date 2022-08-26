@@ -12,12 +12,12 @@ const shema = mongoose.Schema({
     required: true,
   },
   owner: {
-    type: mongoose.Shema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
     required: true,
   },
   likes: {
-    type: [mongoose.Shema.Types.ObjectId],
+    type: [mongoose.Schema.Types.ObjectId],
     ref: 'user',
     default: [],
   },
