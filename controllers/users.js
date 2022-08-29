@@ -1,25 +1,24 @@
 const user = require('../models/user');
+const { ERROR_SERVER, ERROR_BAD_REQ, ERROR_NOT_FOUND } = require('../utils/constants');
 
 const getUser = async (req, res) => {
   try {
     const data = await user.find();
-    res.status(200).send(data);
+    res.send(data);
   } catch (e) {
-    res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
   }
 };
 
 const getUserById = async (req, res) => {
   try {
-    const data = await user.findById(req.params.userId).orFail(() => res.status(404).send({ message: `Пользователь с таким _id ${req.params.userId} не найден` }));
-    res.status(200).send({ data });
+    const data = await user.findById(req.params.userId).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.params.userId} не найден` }));
+    res.send({ data });
   } catch (e) {
-    if (e.name === 'ValidationError') {
-      res.status(400).send({ message: 'Отправлены некорректные данные' });
-    } else if (e.name === 'CastError') {
-      res.status(400).send({ message: `Пользователь по указанному ${req.params.userId} не найден` });
+    if (e.name === 'CastError') {
+      res.status(ERROR_BAD_REQ).send({ message: `Пользователь по указанному ${req.params.userId} не найден` });
     } else {
-      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
     }
   }
 };
@@ -31,9 +30,9 @@ const createUser = async (req, res) => {
     res.status(201).send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(400).send({ message: 'Отправлены некорректные данные' });
+      res.status(ERROR_BAD_REQ).send({ message: e.message });
     } else {
-      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
     }
   }
 };
@@ -45,17 +44,16 @@ const updateUser = async (req, res) => {
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
-    );
-    res.status(200).send({ data });
+    ).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.user._id} не найден` }));
+    res.send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(400).send({ message: 'Отправлены некорректные данные' });
-    } else if (e.name === 'ErrorCaptureStackTrace') {
-      res.status(400).send({ message: 'Отправлены некорректные данные' });
+      console.log(e.message);
+      res.status(ERROR_BAD_REQ).send({ message: e.message });
     } else if (e.name === 'CastError') {
-      res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
+      res.status(ERROR_NOT_FOUND).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
     } else {
-      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
     }
   }
 };
@@ -63,15 +61,19 @@ const updateUser = async (req, res) => {
 const updateUserAvatar = async (req, res) => {
   try {
     const { avatar } = req.body;
-    const data = await user.findByIdAndUpdate(req.user._id, { avatar }, { new: true });
-    res.status(200).send(data);
+    const data = await user.findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+      { new: true, runValidators: true },
+    ).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.user._id} не найден` }));
+    res.send(data);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(400).send({ message: 'Отправлены некорректные данные' });
+      res.status(ERROR_BAD_REQ).send({ message: e.message });
     } else if (e.name === 'CastError') {
-      res.status(404).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
+      res.status(ERROR_NOT_FOUND).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
     } else {
-      res.status(500).send({ message: 'Произошла ошибка на сервере' });
+      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
     }
   }
 };
