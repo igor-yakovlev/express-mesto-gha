@@ -48,7 +48,6 @@ const updateUser = async (req, res) => {
     res.send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      console.log(e.message);
       res.status(ERROR_BAD_REQ).send({ message: e.message });
     } else if (e.name === 'CastError') {
       res.status(ERROR_NOT_FOUND).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
