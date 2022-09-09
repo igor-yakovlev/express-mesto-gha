@@ -1,36 +1,36 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const NotFoundError = require('../errors/not-found-err');
+const UnauthorizedError = require('../errors/conflict-err');
+const ConflictError = require('../errors/conflict-err');
+const BadRequestError = require('../errors/bad-request-err');
 const user = require('../models/user');
-const {
-  ERROR_SERVER,
-  ERROR_BAD_REQ,
-  ERROR_NOT_FOUND,
-  ERROR_UNAUTHORIZED,
-} = require('../utils/constants');
 
-const getUser = async (req, res) => {
+const getUser = async (req, res, next) => {
   try {
     const data = await user.find();
     res.send(data);
   } catch (e) {
-    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+    next(e);
   }
 };
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   try {
-    const data = await user.findById(req.params.userId).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.params.userId} не найден` }));
+    const data = await user.findById(req.params.userId);
+    if (!data) {
+      throw new NotFoundError('Пользователь с таким _id не найден');
+    }
     res.send({ data });
   } catch (e) {
     if (e.name === 'CastError') {
-      res.status(ERROR_BAD_REQ).send({ message: `Пользователь по указанному ${req.params.userId} не найден` });
-    } else {
-      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+      next(new BadRequestError('Пользователь с таким _id не найден'));
     }
+    next(e);
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
     const {
       name,
@@ -50,19 +50,18 @@ const createUser = async (req, res) => {
     res.status(201).send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(ERROR_BAD_REQ).send({ message: e.message });
-    } else if (e.name === 'MongoServerError') {
-      res.status(ERROR_BAD_REQ).send({ message: 'Такой пользователь уже существует' });
-    } else {
-      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+      next(new BadRequestError(e.message));
+    } else if (e.code === 11000) {
+      next(new ConflictError('Такой пользователь уже существует'));
     }
+    next(e);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const data = await user.findOne({ email }).orFail(() => res.status(ERROR_UNAUTHORIZED).send({ message: 'Неправильные почта или пароль' }));
+    const data = await user.findOne({ email });
     const comparePasswords = await bcrypt.compare(password, data.password);
     if (comparePasswords) {
       const token = jwt.sign({ _id: data._id }, 'secret-word', {
@@ -75,59 +74,63 @@ const login = async (req, res) => {
       });
       res.status(200).send({ _id: data._id });
     } else {
-      res.status(ERROR_UNAUTHORIZED).send({ message: 'Неправильные почта или пароль' });
+      throw new UnauthorizedError('Неправильные почта или пароль');
     }
   } catch (e) {
-    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+    next(e);
   }
 };
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = async (req, res, next) => {
   try {
     const data = await user.findById(req.user._id);
     res.status(200).send({ data });
-  } catch (error) {
-    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+  } catch (e) {
+    next(e);
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const data = await user.findByIdAndUpdate(
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
-    ).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.user._id} не найден` }));
+    );
+    if (!data) {
+      throw new NotFoundError('Пользователь с таким _id не найден');
+    }
     res.send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(ERROR_BAD_REQ).send({ message: e.message });
+      next(new BadRequestError(e.message));
     } else if (e.name === 'CastError') {
-      res.status(ERROR_NOT_FOUND).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
-    } else {
-      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+      next(new NotFoundError('Пользователь с таким _id не найден'));
     }
+    next(e);
   }
 };
 
-const updateUserAvatar = async (req, res) => {
+const updateUserAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const data = await user.findByIdAndUpdate(
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
-    ).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Пользователь с таким _id ${req.user._id} не найден` }));
+    );
+    if (!data) {
+      throw new NotFoundError('Пользователь с таким _id не найден');
+    }
     res.send(data);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(ERROR_BAD_REQ).send({ message: e.message });
+      next(new BadRequestError(e.message));
     } else if (e.name === 'CastError') {
-      res.status(ERROR_NOT_FOUND).send({ message: `Пользователь по указанному ${req.user._id} не найден` });
-    } else {
-      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+      next(new NotFoundError('Пользователь с таким _id не найден'));
     }
+    next(e);
   }
 };
 
