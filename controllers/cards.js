@@ -1,5 +1,10 @@
 const card = require('../models/card');
-const { ERROR_SERVER, ERROR_BAD_REQ, ERROR_NOT_FOUND } = require('../utils/constants');
+const {
+  ERROR_SERVER,
+  ERROR_BAD_REQ,
+  ERROR_NOT_FOUND,
+  ERROR_FORBIDDEN,
+} = require('../utils/constants');
 
 const getCard = async (req, res) => {
   try {
@@ -25,14 +30,19 @@ const createCard = async (req, res) => {
 };
 
 const deleteCard = async (req, res) => {
-  try {
-    const data = await card.findByIdAndRemove(req.params.cardId).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Карточки с таким _id ${req.params.cardId} не найдено` }));
-    res.send({ data });
-  } catch (e) {
-    if (e.name === 'CastError') {
-      res.status(ERROR_BAD_REQ).send({ message: `Карточка с указанным ${req.params.cardId}  не найдена` });
-    } else {
-      res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+  const currentCard = await card.findById(req.params.cardId);
+  if (req.user._id !== currentCard.owner.toString()) {
+    res.status(ERROR_FORBIDDEN).send({ message: 'Отказано в доступе' });
+  } else {
+    try {
+      const data = await card.findByIdAndRemove(req.params.cardId).orFail(() => res.status(ERROR_NOT_FOUND).send({ message: `Карточки с таким _id ${req.params.cardId} не найдено` }));
+      res.send({ data });
+    } catch (e) {
+      if (e.name === 'CastError') {
+        res.status(ERROR_BAD_REQ).send({ message: `Карточка с указанным ${req.params.cardId}  не найдена` });
+      } else {
+        res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+      }
     }
   }
 };

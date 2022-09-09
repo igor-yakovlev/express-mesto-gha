@@ -37,4 +37,10 @@ const shema = mongoose.Schema({
   },
 });
 
+shema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
+
 module.exports = mongoose.model('user', shema);
