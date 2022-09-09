@@ -1,7 +1,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
-const { ERROR_SERVER, ERROR_BAD_REQ, ERROR_NOT_FOUND, ERROR_UNAUTHORIZED } = require('../utils/constants');
+const {
+  ERROR_SERVER,
+  ERROR_BAD_REQ,
+  ERROR_NOT_FOUND,
+  ERROR_UNAUTHORIZED,
+} = require('../utils/constants');
 
 const getUser = async (req, res) => {
   try {
@@ -59,7 +64,7 @@ const login = async (req, res) => {
     const comparePasswords = await bcrypt.compare(password, data.password);
     if (comparePasswords) {
       const token = jwt.sign({ _id: data._id }, 'secret-word', {
-        expiresIn: 3600,
+        expiresIn: '7d',
       });
       res.cookie('jwt', token, {
         maxAge: 360000,
@@ -73,7 +78,17 @@ const login = async (req, res) => {
   } catch (e) {
     res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
   }
-}
+};
+
+const getUserInfo = async (req, res) => {
+  try {
+    console.log(req.user);
+    const data = await user.findById(req.user._id);
+    res.status(200).send({ data });
+  } catch (error) {
+    res.status(ERROR_SERVER).send({ message: 'Произошла ошибка на сервере' });
+  };
+};
 
 const updateUser = async (req, res) => {
   try {
@@ -118,6 +133,7 @@ const updateUserAvatar = async (req, res) => {
 module.exports = {
   getUser,
   getUserById,
+  getUserInfo,
   createUser,
   updateUser,
   updateUserAvatar,
