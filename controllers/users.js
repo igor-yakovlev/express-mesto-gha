@@ -1,10 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const NotFoundError = require('../errors/not-found-err');
-const UnauthorizedError = require('../errors/conflict-err');
-const ConflictError = require('../errors/conflict-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 const BadRequestError = require('../errors/bad-request-err');
 const user = require('../models/user');
+const ConflictError = require('../errors/conflict-err');
 
 const getUser = async (req, res, next) => {
   try {
@@ -62,6 +62,9 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const data = await user.findOne({ email });
+    if (!data) {
+      throw new UnauthorizedError('Неправильные почта или пароль');
+    }
     const comparePasswords = await bcrypt.compare(password, data.password);
     if (comparePasswords) {
       const token = jwt.sign({ _id: data._id }, 'secret-word', {

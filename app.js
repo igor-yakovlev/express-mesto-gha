@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { ERROR_NOT_FOUND } = require('./utils/constants');
@@ -23,6 +24,8 @@ app.use('*', (req, res, next) => {
   res.status(ERROR_NOT_FOUND).send({ message: 'Такого запроса нет' });
   next();
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const UnauthorizedError = require('../errors/conflict-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
 const auth = (req, res, next) => {
   const token = req.cookies.jwt;

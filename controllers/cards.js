@@ -32,9 +32,14 @@ const deleteCard = async (req, res, next) => {
       throw new ForbiddenError('Отказано в доступе');
     }
     const data = await card.findByIdAndRemove(req.params.cardId);
+    if (!data) {
+      throw new NotFoundError('Передан несуществующий _id карточки');
+    }
     res.send({ data });
   } catch (e) {
     if (e.name === 'TypeError') {
+      next(new NotFoundError('Карточка с указанным _id не найдена'));
+    } else if (e.name === 'CastError') {
       next(new NotFoundError('Карточка с указанным _id не найдена'));
     }
     next(e);
@@ -49,14 +54,14 @@ const likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!data) {
-      throw new BadRequestError('Передан несуществующий _id карточки');
+      throw new NotFoundError('Передан несуществующий _id карточки');
     }
     res.send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
     } else if (e.name === 'CastError') {
-      next(new BadRequestError('Передан несуществующий _id карточки'));
+      next(new NotFoundError('Передан несуществующий _id карточки'));
     }
     next(e);
   }
@@ -70,16 +75,16 @@ const dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!data) {
-      throw new BadRequestError('Передан несуществующий _id карточки');
+      throw new NotFoundError('Передан несуществующий _id карточки');
     }
     res.send({ data });
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
     } else if (e.name === 'CastError') {
-      next(new BadRequestError('Передан несуществующий _id карточки'));
+      next(new NotFoundError('Передан несуществующий _id карточки'));
     } else if (e.name === 'TypeError') {
-      next(new BadRequestError('Передан несуществующий _id карточки'));
+      next(new NotFoundError('Передан несуществующий _id карточки'));
     }
     next(e);
   }
