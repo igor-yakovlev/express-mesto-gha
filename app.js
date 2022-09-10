@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
+const NotFoundError = require('./errors/not-found-err');
+const error = require('./middlewares/error');
 
 const { PORT = 3000 } = process.env;
 
@@ -21,18 +23,11 @@ app.use(userRouter);
 app.use(cardRouter);
 
 app.use('*', (req, res, next) => {
-  res.status(404).send({ message: 'Такого запроса нет' });
-  next();
+  next(new NotFoundError('Такого запроса нет'));
 });
 
 app.use(errors());
-
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-
-  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
-  next();
-});
+app.use(error);
 
 app.listen(PORT, () => {
   console.log(`Сервер запущен на ${PORT} порту`);

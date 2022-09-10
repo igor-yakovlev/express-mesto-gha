@@ -11,6 +11,13 @@ const {
 
 const cardRouter = express.Router();
 
+const cardIdValidation = Joi.string().required().custom((value, helpers) => {
+  if (!ObjectId.isValid(value)) {
+    return helpers.error('any.invalid');
+  }
+  return value;
+});
+
 cardRouter.get('/cards', getCard);
 cardRouter.post('/cards', celebrate({
   body: Joi.object().keys({
@@ -20,32 +27,17 @@ cardRouter.post('/cards', celebrate({
 }), createCard);
 cardRouter.delete('/cards/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().custom((value, helpers) => {
-      if (!ObjectId.isValid(value)) {
-        return helpers.error('any.invalid');
-      }
-      return value;
-    }),
+    cardId: cardIdValidation,
   }),
 }), deleteCard);
 cardRouter.put('/cards/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().custom((value, helpers) => {
-      if (!ObjectId.isValid(value)) {
-        return helpers.error('any.invalid');
-      }
-      return value;
-    }),
+    cardId: cardIdValidation,
   }),
 }), likeCard);
 cardRouter.delete('/cards/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required().custom((value, helpers) => {
-      if (!ObjectId.isValid(value)) {
-        return helpers.error('any.invalid');
-      }
-      return value;
-    }),
+    cardId: cardIdValidation,
   }),
 }), dislikeCard);
 

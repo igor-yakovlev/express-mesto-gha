@@ -25,6 +25,7 @@ const getUserById = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'CastError') {
       next(new BadRequestError('Пользователь с таким _id не найден'));
+      return;
     }
     next(e);
   }
@@ -51,8 +52,11 @@ const createUser = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
-    } else if (e.code === 11000) {
+      return;
+    }
+    if (e.code === 11000) {
       next(new ConflictError('Такой пользователь уже существует'));
+      return;
     }
     next(e);
   }
@@ -108,8 +112,11 @@ const updateUser = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
-    } else if (e.name === 'CastError') {
+      return;
+    }
+    if (e.name === 'CastError') {
       next(new NotFoundError('Пользователь с таким _id не найден'));
+      return;
     }
     next(e);
   }
@@ -130,8 +137,11 @@ const updateUserAvatar = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
-    } else if (e.name === 'CastError') {
+      return;
+    }
+    if (e.name === 'CastError') {
       next(new NotFoundError('Пользователь с таким _id не найден'));
+      return;
     }
     next(e);
   }

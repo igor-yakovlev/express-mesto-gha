@@ -20,6 +20,7 @@ const createCard = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
+      return;
     }
     next(e);
   }
@@ -39,8 +40,11 @@ const deleteCard = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'TypeError') {
       next(new NotFoundError('Карточка с указанным _id не найдена'));
-    } else if (e.name === 'CastError') {
+      return;
+    }
+    if (e.name === 'CastError') {
       next(new NotFoundError('Карточка с указанным _id не найдена'));
+      return;
     }
     next(e);
   }
@@ -60,8 +64,11 @@ const likeCard = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
-    } else if (e.name === 'CastError') {
+      return;
+    }
+    if (e.name === 'CastError') {
       next(new NotFoundError('Передан несуществующий _id карточки'));
+      return;
     }
     next(e);
   }
@@ -81,10 +88,15 @@ const dislikeCard = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
-    } else if (e.name === 'CastError') {
+      return;
+    }
+    if (e.name === 'CastError') {
       next(new NotFoundError('Передан несуществующий _id карточки'));
-    } else if (e.name === 'TypeError') {
+      return;
+    }
+    if (e.name === 'TypeError') {
       next(new NotFoundError('Передан несуществующий _id карточки'));
+      return;
     }
     next(e);
   }

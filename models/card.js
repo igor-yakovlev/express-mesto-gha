@@ -10,6 +10,9 @@ const shema = mongoose.Schema({
   link: {
     type: String,
     required: [true, 'Поле является обязательным'],
+    validate: {
+      validator: (v) => /https?:\/\/(w{3})?[a-z0-9-]+\.[a-z0-9\S]{2,}/.test(v),
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
