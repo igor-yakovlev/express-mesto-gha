@@ -1,5 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
 const express = require('express');
+const { ObjectId } = require('mongoose').Types;
 const auth = require('../middlewares/auth');
 
 const {
@@ -33,7 +34,12 @@ userRouter.get('/users/me', getUserInfo);
 userRouter.get('/users', getUser);
 userRouter.get('/users/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    userId: Joi.string().required().custom((value, helpers) => {
+      if (!ObjectId.isValid(value)) {
+        return helpers.error('any.invalid');
+      }
+      return value;
+    }),
   }),
 }), getUserById);
 userRouter.patch('/users/me', celebrate({

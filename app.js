@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
-const { ERROR_NOT_FOUND } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -20,8 +19,9 @@ app.use(cookieParser());
 
 app.use(userRouter);
 app.use(cardRouter);
+
 app.use('*', (req, res, next) => {
-  res.status(ERROR_NOT_FOUND).send({ message: 'Такого запроса нет' });
+  res.status(404).send({ message: 'Такого запроса нет' });
   next();
 });
 

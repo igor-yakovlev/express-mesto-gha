@@ -1,4 +1,5 @@
 const express = require('express');
+const { ObjectId } = require('mongoose').Types;
 const { celebrate, Joi } = require('celebrate');
 const {
   getCard,
@@ -19,17 +20,32 @@ cardRouter.post('/cards', celebrate({
 }), createCard);
 cardRouter.delete('/cards/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    cardId: Joi.string().required().custom((value, helpers) => {
+      if (!ObjectId.isValid(value)) {
+        return helpers.error('any.invalid');
+      }
+      return value;
+    }),
   }),
 }), deleteCard);
 cardRouter.put('/cards/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    cardId: Joi.string().required().custom((value, helpers) => {
+      if (!ObjectId.isValid(value)) {
+        return helpers.error('any.invalid');
+      }
+      return value;
+    }),
   }),
 }), likeCard);
 cardRouter.delete('/cards/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    cardId: Joi.string().required().custom((value, helpers) => {
+      if (!ObjectId.isValid(value)) {
+        return helpers.error('any.invalid');
+      }
+      return value;
+    }),
   }),
 }), dislikeCard);
 
